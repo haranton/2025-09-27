@@ -77,3 +77,27 @@ func (fs *FileStorage) GetAllTasks() ([]*models.Task, error) {
 
 	return tasks, nil
 }
+
+func (fs *FileStorage) UpdateTaskStatus(taskID string, status models.TaskStatus) error {
+	fileName := "task_" + taskID + ".json"
+	filePath := filepath.Join(fs.basePath, fs.tasksDir, fileName)
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("ошибка чтения файла: %w", err)
+	}
+
+	var task models.Task
+	if err := json.Unmarshal(data, &task); err != nil {
+		return fmt.Errorf("ошибка парсинга JSON: %w", err)
+	}
+
+	task.Status = status
+
+	err = fs.SaveTask(&task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

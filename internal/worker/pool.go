@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"fmt"
+	"log"
 	"sync"
 )
 
@@ -26,7 +26,6 @@ func NewPool(maxWorkers int) *Pool {
 	pool.startWorkers()
 
 	return pool
-
 }
 
 func (p *Pool) startWorkers() {
@@ -42,14 +41,14 @@ func (p *Pool) worker(workerID int) {
 		select {
 		case job, ok := <-p.jobs:
 			if !ok {
-				fmt.Printf("Worker %d stopping (channel closed)\n", workerID)
+				log.Printf("Worker %d stopping (channel closed)\n", workerID)
 				return
 			}
-			fmt.Printf("Worker %d executing job\n", workerID)
+			log.Printf("Worker %d executing job\n", workerID)
 			job()
-			fmt.Printf("Worker %d job completed\n", workerID)
+			log.Printf("Worker %d job completed\n", workerID)
 		case <-p.stopChan:
-			fmt.Printf("Worker %d stopping (signal received)\n", workerID)
+			log.Printf("Worker %d stopping (signal received)\n", workerID)
 			return
 		}
 	}
@@ -58,31 +57,24 @@ func (p *Pool) worker(workerID int) {
 func (p *Pool) Submit(job func()) {
 	select {
 	case p.jobs <- job:
-		// Задача успешно добавлена в канал
-		fmt.Println("Job submitted to worker pool")
+		log.Println("Job submitted to worker pool")
 	case <-p.stopChan:
-		// Пул остановлен, задача не принимается
-		fmt.Println("Worker pool is stopped, job rejected")
+		log.Println("Worker pool is stopped, job rejected")
 	default:
-		// Канал заполнен, задача не может быть добавлена сразу
-		fmt.Println("Worker pool is busy, job queued for retry")
+		log.Println("Worker pool is busy, job queued for retry")
 	}
 }
 
 func (p *Pool) Stop() {
+	log.Println("Stopping worker pool...")
 
-	fmt.Println("Stopping worker pool...")
-
-	// Закрываем stopChan чтобы сигнализировать воркерам о остановке
 	close(p.stopChan)
 
-	// Ждем завершения всех воркеров
 	p.wg.Wait()
 
-	// Закрываем канал jobs
 	close(p.jobs)
 
-	fmt.Println("Worker pool stopped")
+	log.Println("Worker pool stopped")
 }
 
 func (p *Pool) GetQueueSize() int {

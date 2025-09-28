@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type TaskStatus string
 type FileStatus string
@@ -17,15 +21,17 @@ const (
 	FileStatusError       FileStatus = "error"
 )
 
-type Task struct {
-	Id     uuid.UUID
-	Status TaskStatus
-	Urls   []string
+type FileInfo struct {
+	URL         string     `json:"url"`
+	Status      FileStatus `json:"status"`
+	FilePath    string     `json:"file_path,omitempty"`
+	Error       string     `json:"error,omitempty"`
+	StartedAt   *time.Time `json:"started_at,omitempty"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
 
-type File struct {
-	URL      string     `json:"url"` // Естественный идентификатор
-	Status   FileStatus `json:"status"`
-	FilePath string     `json:"file_path,omitempty"`
-	Error    string     `json:"error,omitempty"`
+type Task struct {
+	Id     uuid.UUID  `json:"id"`
+	Status TaskStatus `json:"status"`
+	Urls   []FileInfo `json:"urls"`
 }
