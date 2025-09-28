@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"webfilehosting/internal/models"
-
-	"github.com/google/uuid"
 )
 
 type FileStorage struct {
@@ -23,7 +21,7 @@ func (fs *FileStorage) SaveTask(task *models.Task) error {
 		return fmt.Errorf("ошибка преобразования json файла: %w", err)
 	}
 
-	fileName := "task_" + uuid.NewString() + ".json"
+	fileName := "task_" + task.Id.String() + ".json"
 	filePath := filepath.Join(fs.basePath, fs.tasksDir, fileName)
 
 	if err = os.WriteFile(filePath, jsonData, 0644); err != nil {
@@ -33,6 +31,7 @@ func (fs *FileStorage) SaveTask(task *models.Task) error {
 
 }
 func (fs *FileStorage) GetTask(taskID string) (*models.Task, error) {
+
 	fileName := "task_" + taskID + ".json"
 	filePath := filepath.Join(fs.basePath, fs.tasksDir, fileName)
 
@@ -51,6 +50,7 @@ func (fs *FileStorage) GetTask(taskID string) (*models.Task, error) {
 }
 
 func (fs *FileStorage) GetAllTasks() ([]*models.Task, error) {
+
 	dirPath := filepath.Join(fs.basePath, fs.tasksDir)
 	files, err := os.ReadDir(dirPath)
 
